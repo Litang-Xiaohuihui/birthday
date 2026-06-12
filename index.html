@@ -2,9 +2,10 @@
 <canvas id="pinkboard" width="100vw" height="100vh"></canvas>
 <div class="htmleaf-container"><div class="wrapper"><div class="container">
 <h1>🎂 生日快乐</h1>
-<form class="form">
-<input id="userName" name="userName" type="text" placeholder="名字" readonly value="郑可乐">
-<input id="pwd" name="pwd" type="text" placeholder="请输入可乐的生日" autocomplete="off">
+<form class="form" onsubmit="return false;">
+<input id="userName" name="userName" type="text" placeholder="请输入用户名" autocomplete="off">
+<input id="pwd" name="pwd" type="password" placeholder="请输入密码" autocomplete="off" maxlength="8">
+<div class="err-msg" id="errMsg"></div>
 <button type="button" id="login-button">✨ 进入 ✨</button>
 </form>
 </div></div></div>
@@ -14,15 +15,24 @@
 <script>
 var texts=["happy birthday","天天开心","❤️"];
 fillText(document.getElementById("pinkboard"),texts);
+
 document.getElementById("login-button").onclick=function(){
-  var p=document.getElementById("pwd").value.trim();
-  if(p==="20040622"||p==="2004.06.22"||p==="2004-06-22"){
-    window.location.href="Memories.html";
-  }else{
-    alert("密码不对哦，再想想~（提示：可乐的生日）");
-  }
+  var uname=document.getElementById("userName").value.trim();
+  var pwd=document.getElementById("pwd").value.trim();
+  var err=document.getElementById("errMsg");
+  if(!uname){err.textContent="⚠ 请输入用户名";return;}
+  if(uname!=="郑可乐"){err.textContent="⚠ 用户名不正确哦";return;}
+  if(pwd.length!==8){err.textContent="⚠ 请输入8位数密码";return;}
+  if(pwd!=="20040622"){err.textContent="⚠ 密码不正确，再想想~";return;}
+  err.textContent="";
+  // fade out and redirect
+  document.querySelector(".htmleaf-container").style.opacity="0";
+  document.querySelector(".htmleaf-container").style.transition="opacity 0.8s";
+  setTimeout(function(){window.location.href="Memories.html"},800);
 };
 </script>
 <style>
 #pinkboard{z-index:-1;position:fixed;top:0;left:0;width:100vw;height:100vh;margin:0;padding:0;font-size:16px;background-color:black}
+.err-msg{color:#ff6b6b;font-size:12px;margin-top:8px;min-height:18px;text-align:center}
+.htmleaf-container{transition:opacity 0.8s}
 </style></body></html>
