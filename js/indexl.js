@@ -1,4 +1,4 @@
-
+﻿
 var S = {
   init: function () {
     var m=0;
@@ -11,7 +11,7 @@ var S = {
     if (i !== -1) {
       S.UI.simulate(decodeURI(action).substring(i + 3));
     } else {
-      S.UI.simulate('廷姐|生日快乐|永远18岁|happy birthday|#countdown 3||');
+      S.UI.simulate('Hi 郑可乐|祝你|生日快乐|happy birthday|#countdown 3||');
     }
 
     S.Drawing.loop(function () {
@@ -713,3 +713,4 @@ S.Shape = (function () {
 
 
 S.init();
+
