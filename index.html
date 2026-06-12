@@ -22,8 +22,7 @@ document.getElementById("login-button").onclick=function(){
   var err=document.getElementById("errMsg");
   if(!uname){err.textContent="⚠ 请输入用户名";return;}
   if(uname!=="郑可乐"){err.textContent="⚠ 用户名不正确哦";return;}
-  if(pwd.length!==8){err.textContent="⚠ 请输入8位数密码";return;}
-  if(pwd!=="20040622"){err.textContent="⚠ 密码不正确，再想想~";return;}
+    if(pwd!=="20040622"){err.textContent="⚠ 密码不正确，再想想~";return;}
   err.textContent="";
   // fade out and redirect
   document.querySelector(".htmleaf-container").style.opacity="0";
@@ -36,5 +35,6 @@ document.getElementById("login-button").onclick=function(){
 .err-msg{color:#ff6b6b;font-size:12px;margin-top:8px;min-height:18px;text-align:center}
 .htmleaf-container{transition:opacity 0.8s}
 </style></body></html>
+
 
 
