@@ -1,137 +1,209 @@
-﻿<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>郑可乐 生日快乐</title><style>
+﻿<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>郑可乐 · 生日快乐</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.min.css"><style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0d0d2b;overflow:hidden;font-family:"Microsoft YaHei","PingFang SC",sans-serif;cursor:pointer;user-select:none;display:flex;justify-content:center;align-items:center;height:100vh}
-canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
-#hint{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);color:#ffd700;font-size:14px;text-align:center;animation:blink 1.5s infinite;z-index:10;pointer-events:none;text-shadow:2px 2px 0 #000}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;overflow:hidden;background:#000}
+/* password gate */
+#gate{position:fixed;z-index:9999;inset:0;background:radial-gradient(ellipse at center,#1a0a2e 0%,#0d0015 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s}
+#gate.hide{opacity:0;visibility:hidden;pointer-events:none}
+#gate h2{color:#ffd700;font-size:28px;margin-bottom:10px;text-shadow:0 0 20px #ff8800;animation:glow 2s ease-in-out infinite}
+#gate p{color:#ffb6c1;font-size:14px;margin-bottom:30px;animation:glow 2s ease-in-out .5s infinite}
+#gate input{padding:12px 20px;font-size:16px;border:2px solid #ffd700;border-radius:8px;background:rgba(255,255,255,.1);color:#ffd700;text-align:center;outline:none;width:220px;letter-spacing:2px}
+#gate input::placeholder{color:rgba(255,215,0,.4)}
+#gate button{margin-top:16px;padding:10px 36px;font-size:15px;border:none;border-radius:8px;background:linear-gradient(135deg,#ff6b6b,#ffd700);color:#1a0a2e;cursor:pointer;font-weight:bold;transition:transform .2s}
+#gate button:hover{transform:scale(1.05)}
+#gate .err{color:#ff6b6b;font-size:12px;margin-top:10px;min-height:18px}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* fullpage overrides */
+.fp-watermark{display:none!important}
+#fp-nav ul li a span{background:#ffd700!important}
+.section{text-align:center;display:flex;align-items:center;justify-content:center}
+
+/* canvas layers */
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+#fgCanvas{position:fixed;inset:0;z-index:100;pointer-events:none}
+
+/* section 1 - fireworks text */
+.s1{background:radial-gradient(ellipse at center,#0d0d2b 0%,#000 100%);flex-direction:column}
+.s1 .big{font-size:clamp(36px,8vw,72px);font-weight:900;color:#ffd700;text-shadow:0 0 40px #ff8800,0 0 80px #ff4444;opacity:0;transition:opacity 1.5s;z-index:1}
+.s1 .big.show{opacity:1}
+.s1 .sub{font-size:clamp(16px,3vw,28px);color:#ffb6c1;margin-top:16px;opacity:0;transition:opacity 1.5s .5s;z-index:1}
+.s1 .sub.show{opacity:1}
+
+/* section 2 - cake */
+.s2{background:radial-gradient(ellipse at center 40%,#1a1040 0%,#0d0d2b 100%);flex-direction:column}
+.s2 .hint{color:#ffd700;font-size:13px;margin-top:24px;animation:blink 1.5s infinite;z-index:1}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-</style></head><body><canvas id="c"></canvas><div id="hint">🎁 点击礼物盒打开 🎁</div>
-<script>
-const C=document.getElementById("c"),X=C.getContext("2d"),H=document.getElementById("hint");
-let W,hh,P="gift",pT=0,gB=0,gBT=0;
-function R(){W=C.width=innerWidth;hh=C.height=innerHeight}R();addEventListener("resize",R);
+.s2 svg{width:min(300px,70vw);z-index:1}
 
-let A;function IA(){A||(A=new(window.AudioContext||window.webkitAudioContext))}
-function PN(f,d,t,v){if(!A)return;let o=A.createOscillator(),g=A.createGain(),cT=A.currentTime;o.type=t||"square";o.frequency.value=f;g.gain.setValueAtTime(v||.08,cT);g.gain.exponentialRampToValueAtTime(.001,cT+d);o.connect(g);g.connect(A.destination);o.start(cT);o.stop(cT+d)}
+/* section 3 - blessings */
+.s3{background:radial-gradient(ellipse at center,#1a1040 0%,#0d0d2b 100%);flex-direction:column}
+.s3 .card{background:rgba(255,255,255,.05);border:1px solid rgba(255,215,0,.2);border-radius:16px;padding:32px 28px;max-width:420px;width:85%;backdrop-filter:blur(4px);z-index:1}
+.s3 .card h3{color:#ffd700;font-size:20px;margin-bottom:20px}
+.s3 .card p{color:#ffb6c1;font-size:14px;line-height:2.2;text-align:left;padding-left:12px}
 
-let FW=[],CF=[],fWW=0,fWT=0,lFT=0;
-class Pt{constructor(x,y,vx,vy,c,l,s){this.x=x;this.y=y;this.vx=vx;this.vy=vy;this.c=c;this.l=l;this.ml=l;this.s=s||3;this.g=.06;this.t=[]}
-u(){this.t.push({x:this.x,y:this.y});if(this.t.length>5)this.t.shift();this.vx*=.99;this.vy*=.99;this.vy+=this.g;this.x+=this.vx;this.y+=this.vy;this.l--}
-d(C){let a=this.l/this.ml;for(let i=0;i<this.t.length;i++){let p=this.t[i];C.globalAlpha=(i/this.t.length)*a*.5;C.fillStyle=this.c;C.fillRect(p.x-this.s/2,p.y-this.s/2,this.s,this.s)}C.globalAlpha=a;C.fillStyle=this.c;C.fillRect(this.x-this.s/2,this.y-this.s/2,this.s,this.s);C.globalAlpha=1}}
-class Cf{constructor(x,y,vx,vy,c,s){this.x=x;this.y=y;this.vx=vx;this.vy=vy;this.c=c;this.s=s;this.r=Math.random()*Math.PI*2;this.rs=(Math.random()-.5)*.15;this.g=.04;this.w=Math.random()*Math.PI*2;this.l=100+Math.random()*100;this.ml=this.l}
-u(){this.w+=.05;this.vx+=Math.sin(this.w)*.15;this.vy+=this.g;this.x+=this.vx;this.y+=this.vy;this.r+=this.rs;this.l--}
-d(C){let a=Math.min(1,this.l/40);C.save();C.globalAlpha=a;C.translate(this.x,this.y);C.rotate(this.r);C.fillStyle=this.c;C.fillRect(-this.s,-this.s/2,this.s*2,this.s);C.restore()}}
-function spFW(){let cx=W*.3+Math.random()*W*.4,cy=hh*.15+Math.random()*hh*.5,cs=["#ff4444","#ff8800","#ffdd00","#44ff44","#44aaff","#ff44ff","#ff88aa","#00ffcc"],c=cs[Math.floor(Math.random()*cs.length)],n=30+Math.floor(Math.random()*40);for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,s=2+Math.random()*5,vx=Math.cos(a)*s,vy=Math.sin(a)*s;FW.push(new Pt(cx,cy,vx,vy,c,40+Math.random()*50,3))}}
-function spCFB(){let cs=["#ff4444","#ff8800","#ffdd00","#44ff44","#44aaff","#ff44ff","#ff88aa","#ff88cc","#44ddff"];for(let i=0;i<25;i++){let x=W*.2+Math.random()*W*.6,y=hh*.05,vx=(Math.random()-.5)*8,vy=Math.random()*6+2;CF.push(new Cf(x,y,vx,vy,cs[Math.floor(Math.random()*cs.length)],4+Math.random()*5))}}
+/* section 4 - final */
+.s4{background:radial-gradient(ellipse at center,#1a0a2e 0%,#0d0015 100%);flex-direction:column}
+.s4 .final{font-size:clamp(20px,5vw,36px);color:#ffd700;font-weight:900;z-index:1;text-shadow:0 0 30px #ff8800;opacity:0;transition:opacity 1.5s}
+.s4 .final.show{opacity:1}
+.s4 .name{font-size:clamp(14px,3vw,20px);color:#ffb6c1;margin-top:12px;z-index:1;opacity:0;transition:opacity 1.5s .5s}
+.s4 .name.show{opacity:1}
+</style></head><body>
 
-function drawGift(cx,cy,sc){
-  X.save();X.translate(cx,cy);X.scale(sc,sc);X.imageSmoothingEnabled=false;
-  X.fillStyle="rgba(0,0,0,.3)";X.fillRect(-30,-20,60,60);
-  X.fillStyle="#cc2222";X.fillRect(-28,-14,56,52);
-  X.fillStyle="#aa1111";X.fillRect(-28,-14,56,6);
-  X.fillStyle="#ff3333";X.fillRect(-28,28,56,10);
-  X.fillStyle="#ffd700";X.fillRect(-6,-14,12,52);
-  X.fillStyle="#ffed4a";X.fillRect(-3,-14,6,52);
-  X.fillStyle="#ffd700";X.fillRect(-28,6,56,12);
-  X.fillStyle="#ffed4a";X.fillRect(-28,9,56,6);
-  X.fillStyle="#dd3333";X.fillRect(-32,-26,64,16);
-  X.fillStyle="#ff4444";X.fillRect(-32,-26,64,4);
-  X.fillStyle="#bb1111";X.fillRect(-32,-14,64,4);
-  X.fillStyle="#ffd700";X.fillRect(-6,-36,12,20);X.fillRect(-14,-28,28,8);
-  X.fillStyle="#ffaa00";X.fillRect(-18,-40,12,18);X.fillRect(6,-40,12,18);
-  X.fillStyle="#ffd700";X.fillRect(-16,-38,8,14);X.fillRect(8,-38,8,14);
-  X.restore();
-}
+<div id="gate">
+  <h2>🎂</h2>
+  <p>请输入郑可乐的生日</p>
+  <input id="pwd" type="text" placeholder="如 0612" maxlength="4">
+  <button onclick="checkPwd()">✨ 进入 ✨</button>
+  <div class="err" id="err"></div>
+</div>
 
-function drawCake(cx,cy){
-  X.save();X.translate(cx,cy);X.imageSmoothingEnabled=false;
-  X.fillStyle="rgba(0,0,0,.25)";X.fillRect(-68,58,140,8);
-  X.fillStyle="#f5f5f5";X.fillRect(-70,58,144,7);
-  X.fillStyle="#ddd";X.fillRect(-68,58,140,3);
-  X.fillStyle="#8B4513";X.fillRect(-56,14,116,44);
-  X.fillStyle="#A0522D";X.fillRect(-56,14,116,6);
-  X.fillStyle="#6B3410";X.fillRect(-56,50,116,8);
-  X.fillStyle="#FFF8DC";X.fillRect(-52,22,108,8);
-  X.fillStyle="#FFF0C0";X.fillRect(-52,24,108,4);
-  X.fillStyle="#F5DEB3";X.fillRect(-48,-18,100,34);
-  X.fillStyle="#FAEBD7";X.fillRect(-48,-18,100,5);
-  X.fillStyle="#FFB6C1";
-  for(let x=-48;x<52;x+=7)X.fillRect(x,-24,7,10);
-  for(let x=-45;x<48;x+=7){X.fillStyle="#FFC0CB";X.fillRect(x,-24,7,7)}
-  X.fillStyle="#FF69B4";X.fillRect(-40,-30,84,7);
-  X.fillStyle="#FF85C8";X.fillRect(-40,-30,84,3);
-  let cs=["#FF4444","#FFD700","#44FF44","#4488FF","#FF44FF","#FF8800"];
-  for(let i=0;i<32;i++){X.fillStyle=cs[i%6];let sx=-34+(i*7)%66+(i%3)*2,sy=-28+(i%5)*4;X.fillRect(sx,sy,3,2);X.fillRect(sx+1,sy-1,1,3)}
-  X.fillStyle="#CC0000";X.fillRect(-4,-40,9,7);X.fillRect(-2,-43,5,5);
-  X.fillStyle="#FF2222";X.fillRect(-3,-40,4,3);X.fillStyle="#00AA00";X.fillRect(0,-48,1,6);
-  for(let s=-46;s<48;s+=22){X.fillStyle="#FFB6C1";X.fillRect(s,-2,12,9);X.fillStyle="#FFC0CB";X.fillRect(s+1,-2,10,7);X.fillStyle="#FF69B4";X.fillRect(s+3,0,6,5)}
-  let cls=["#FF4444","#FF8800","#FFD700","#44FF44","#44AAFF"];
-  for(let i=0;i<5;i++){let cx_c=-34+i*17;
-    X.fillStyle="#FFF8F0";X.fillRect(cx_c-4,-52,8,26);
-    X.fillStyle=cls[i];X.fillRect(cx_c-4,-52,8,5);X.fillRect(cx_c-4,-44,8,4);X.fillRect(cx_c-4,-38,8,3);
-    X.fillStyle="#FFE4C4";X.fillRect(cx_c-4,-52,8,2);
-    X.fillStyle="#333";X.fillRect(cx_c-0.5,-58,2,6);
+<canvas id="bgCanvas"></canvas>
+<canvas id="fgCanvas"></canvas>
+
+<div id="fullpage">
+  <div class="section s1" data-anchor="hello">
+    <div class="big" id="bigText">郑可乐</div>
+    <div class="sub" id="subText">生 日 快 乐 🎉</div>
+  </div>
+  <div class="section s2" data-anchor="cake">
+    <svg id="cakeSVG" viewBox="0 0 200 500" style="width:min(280px,65vw)">
+      <defs><style>.c{fill:#ffe4c4}.d{fill:#f5deb3}.e{fill:#8b4513}.f{fill:#ffb6c1}.g{fill:#ff69b4}.h{fill:#ffd700}.i{fill:#ff4444}</style></defs>
+      <ellipse cx="100" cy="440" rx="75" ry="12" fill="rgba(0,0,0,.2)"/>
+      <!-- plate -->
+      <ellipse cx="100" cy="425" rx="72" ry="10" fill="#f0f0f0"/>
+      <ellipse cx="100" cy="425" rx="68" ry="8" fill="#e0e0e0"/>
+      <!-- bottom layer -->
+      <rect x="35" y="370" width="130" height="50" rx="4" class="e"/>
+      <rect x="35" y="370" width="130" height="6" rx="2" fill="#a0522d"/>
+      <!-- cream -->
+      <rect x="32" y="385" width="136" height="8" rx="3" fill="#fff8dc"/>
+      <!-- top layer -->
+      <rect x="42" y="330" width="116" height="38" rx="4" class="d"/>
+      <rect x="42" y="330" width="116" height="5" rx="2" fill="#faebd7"/>
+      <!-- frosting -->
+      <path d="M38,330 Q44,320 50,330 Q56,320 62,330 Q68,320 74,330 Q80,320 86,330 Q92,320 98,330 Q104,320 110,330 Q116,320 122,330 Q128,320 134,330 Q140,320 146,330 Q152,320 158,330 Q164,320 162,330" class="f"/>
+      <rect x="46" y="322" width="108" height="6" rx="3" class="g"/>
+      <!-- sprinkles -->
+      <circle cx="55" cy="324" r="1.5" class="i"/><circle cx="65" cy="323" r="1.5" class="h"/>
+      <circle cx="78" cy="324" r="1.5" fill="#44ff44"/><circle cx="90" cy="323" r="1.5" fill="#44aaff"/>
+      <circle cx="105" cy="324" r="1.5" class="h"/><circle cx="120" cy="323" r="1.5" class="i"/>
+      <circle cx="133" cy="324" r="1.5" fill="#ff44ff"/><circle cx="145" cy="323" r="1.5" class="h"/>
+      <!-- cherry -->
+      <circle cx="100" cy="316" r="7" class="i"/><circle cx="98" cy="314" r="2.5" fill="#ff6666"/>
+      <line x1="100" y1="309" x2="100" y2="302" stroke="#00aa00" stroke-width="1.5"/>
+      <!-- candles -->
+      <g id="candles">
+        <rect x="56" y="292" width="7" height="28" rx="1" fill="#fff8f0"/><rect x="56" y="292" width="7" height="5" fill="#ff4444"/>
+        <rect x="70" y="290" width="7" height="30" rx="1" fill="#fff8f0"/><rect x="70" y="290" width="7" height="5" fill="#ff8800"/>
+        <rect x="84" y="289" width="7" height="31" rx="1" fill="#fff8f0"/><rect x="84" y="289" width="7" height="5" fill="#ffd700"/>
+        <rect x="110" y="290" width="7" height="30" rx="1" fill="#fff8f0"/><rect x="110" y="290" width="7" height="5" fill="#44ff44"/>
+        <rect x="124" y="292" width="7" height="28" rx="1" fill="#fff8f0"/><rect x="124" y="292" width="7" height="5" fill="#44aaff"/>
+        <line x1="59" y1="292" x2="59" y2="286" stroke="#333" stroke-width="1.5"/>
+        <line x1="73" y1="290" x2="73" y2="284" stroke="#333" stroke-width="1.5"/>
+        <line x1="87" y1="289" x2="87" y2="283" stroke="#333" stroke-width="1.5"/>
+        <line x1="113" y1="290" x2="113" y2="284" stroke="#333" stroke-width="1.5"/>
+        <line x1="127" y1="292" x2="127" y2="286" stroke="#333" stroke-width="1.5"/>
+        <!-- flames -->
+        <ellipse cx="59" cy="282" rx="4" ry="7" fill="#ffaa00" class="flame"><animate attributeName="ry" values="7;5;7" dur=".3s" repeatCount="indefinite"/></ellipse>
+        <ellipse cx="59" cy="283" rx="2" ry="4" fill="#ffdd00"/>
+        <ellipse cx="73" cy="280" rx="4" ry="7" fill="#ffaa00" class="flame"><animate attributeName="ry" values="7;5;7" dur=".35s" repeatCount="indefinite"/></ellipse>
+        <ellipse cx="73" cy="281" rx="2" ry="4" fill="#ffdd00"/>
+        <ellipse cx="87" cy="279" rx="4" ry="7" fill="#ffaa00" class="flame"><animate attributeName="ry" values="7;5;7" dur=".28s" repeatCount="indefinite"/></ellipse>
+        <ellipse cx="87" cy="280" rx="2" ry="4" fill="#ffdd00"/>
+        <ellipse cx="113" cy="280" rx="4" ry="7" fill="#ffaa00" class="flame"><animate attributeName="ry" values="7;5;7" dur=".32s" repeatCount="indefinite"/></ellipse>
+        <ellipse cx="113" cy="281" rx="2" ry="4" fill="#ffdd00"/>
+        <ellipse cx="127" cy="282" rx="4" ry="7" fill="#ffaa00" class="flame"><animate attributeName="ry" values="7;5;7" dur=".3s" repeatCount="indefinite"/></ellipse>
+        <ellipse cx="127" cy="283" rx="2" ry="4" fill="#ffdd00"/>
+      </g>
+    </svg>
+    <div class="hint">🕯️ 点击屏幕吹蜡烛 🕯️</div>
+  </div>
+  <div class="section s3" data-anchor="wish">
+    <div class="card">
+      <h3>✨ 写给可乐 ✨</h3>
+      <p>希望你所求皆如愿<br>所行化坦途<br>多喜乐，长安宁<br>生日快乐，可乐！<br>新的一岁<br>继续做那个闪闪发光的人✨</p>
+    </div>
+  </div>
+  <div class="section s4" data-anchor="final">
+    <div class="final" id="finalText">郑可乐</div>
+    <div class="name" id="finalSub">祝你天天开心 🎂</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.min.js">
+</script><script>
+// password
+function checkPwd(){
+  let v=document.getElementById("pwd").value.trim();
+  if(v==="0612"||v==="612"||v==="6.12"||v==="6月12"){
+    document.getElementById("err").textContent="";
+    document.getElementById("gate").classList.add("hide");
+    startAll();
+  }else{
+    document.getElementById("err").textContent="❌ 不对哦，再想想~（提示：可乐的生日）";
   }
-  X.restore();
+}
+document.getElementById("pwd").addEventListener("keydown",e=>{if(e.key==="Enter")checkPwd()});
+
+// bg canvas - stars + cherry blossom
+const bgC=document.getElementById("bgCanvas"),bgX=bgC.getContext("2d");
+let bW,bH,stars=[],petals=[];
+function bgResize(){bW=bgC.width=innerWidth;bH=bgC.height=innerHeight}bgResize();addEventListener("resize",bgResize);
+for(let i=0;i<120;i++)stars.push({x:Math.random()*2000,y:Math.random()*2000,r:.5+Math.random()*1.5,b:.3+Math.random()*.7,s:Math.random()*.02+.002});
+for(let i=0;i<25;i++)petals.push({x:Math.random()*2000,y:Math.random()*-500,r:Math.random()*Math.PI*2,speed:.3+Math.random()*.8,sway:Math.random()*.02,w:3+Math.random()*4,h:4+Math.random()*5,op:.3+Math.random()*.5});
+function drawBg(){
+  bgX.clearRect(0,0,bW,bH);
+  let g=bgX.createRadialGradient(bW/2,bH/2,0,bW/2,bH/2,Math.max(bW,bH));
+  g.addColorStop(0,"#0d0d2b");g.addColorStop(1,"#000");bgX.fillStyle=g;bgX.fillRect(0,0,bW,bH);
+  for(let s of stars){bgX.globalAlpha=s.b+.4*Math.sin(Date.now()*.003+s.x);bgX.fillStyle="#fff";bgX.fillRect(s.x%bW,s.y%bH,s.r,s.r)}bgX.globalAlpha=1;
+  for(let p of petals){p.y+=p.speed;p.x+=Math.sin(Date.now()*.001+p.r)*.4;p.r+=p.sway;if(p.y>bH+50){p.y=-20;p.x=Math.random()*bW}bgX.globalAlpha=p.op;bgX.fillStyle="#ffb6c1";bgX.save();bgX.translate(p.x,p.y);bgX.rotate(p.r);bgX.fillRect(-p.w/2,-p.h/2,p.w,p.h);bgX.restore()}bgX.globalAlpha=1;
+  requestAnimationFrame(drawBg);
 }
 
-let fO=[0,0,0,0,0];
-function drawFlames(cx,cy){
-  X.save();X.translate(cx,cy);
-  for(let i=0;i<5;i++){if(cB[i])continue;let fx=-34+i*17,fy=-62+fO[i];
-    X.fillStyle="rgba(255,120,0,.4)";X.fillRect(fx-4,fy-10,8,16);
-    X.fillStyle="#FF6600";X.fillRect(fx-3,fy-9,6,15);
-    X.fillStyle="#FFAA00";X.fillRect(fx-2,fy-7,4,12);
-    X.fillStyle="#FFDD00";X.fillRect(fx-1,fy-5,2,8);
-    X.fillStyle="#FFFFCC";X.fillRect(fx,fy-3,1,4);
-    fO[i]+=(Math.random()-.5)*.6;fO[i]*=.92;
-  }X.restore();
+// fg canvas - fireworks
+const fgC=document.getElementById("fgCanvas"),fgX=fgC.getContext("2d");
+let fW,fH,fwParticles=[];
+function fgResize(){fW=fgC.width=innerWidth;fH=fgC.height=innerHeight}fgResize();addEventListener("resize",fgResize);
+let fwActive=false,fwShowText=false;
+function spawnFW(){
+  let cx=Math.random()*fW*.8+fW*.1,cy=fH*.2+Math.random()*fH*.4;
+  let cs=["#ff4444","#ff8800","#ffdd00","#44ff44","#44aaff","#ff44ff","#ff88aa","#00ffcc"];
+  let c=cs[Math.floor(Math.random()*cs.length)],n=40+Math.floor(Math.random()*50);
+  for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,s=2+Math.random()*6;fwParticles.push({x:cx,y:cy,vx:Math.cos(a)*s,vy:Math.sin(a)*s,c:c,l:50+Math.random()*60,ml:60,g:.05,s:2+Math.random()*3})}
+}
+function drawFG(){
+  fgX.clearRect(0,0,fW,fH);
+  for(let i=fwParticles.length-1;i>=0;i--){let p=fwParticles[i];p.vx*=.99;p.vy*=.99;p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.l--;if(p.l<=0)fwParticles.splice(i,1);else{let a=p.l/p.ml;fgX.globalAlpha=a;fgX.fillStyle=p.c;fgX.fillRect(p.x-p.s/2,p.y-p.s/2,p.s,p.s)}}fgX.globalAlpha=1;
+  requestAnimationFrame(drawFG);
 }
 
-function drawStars(){
-  X.fillStyle="#fff";let t=Date.now()*.001;
-  for(let i=0;i<60;i++){let sx=(i*137.5+50)%W,sy=(i*97.3+30)%(hh*.6),b=.3+.7*Math.abs(Math.sin(t+i));X.globalAlpha=b;X.fillRect(sx,sy,2,2)}X.globalAlpha=1;
+// fullpage
+let fp;
+function startAll(){
+  if(fp)return;
+  drawBg();drawFG();
+  fp=new fullpage("#fullpage",{
+    autoScrolling:true,scrollHorizontally:false,navigation:true,navigationPosition:"right",
+    afterLoad:function(origin,dest,direction){
+      let idx=dest.index;
+      if(idx===0){document.getElementById("bigText").classList.add("show");document.getElementById("subText").classList.add("show");fwActive=true;for(let i=0;i<4;i++)setTimeout(spawnFW,i*300)}
+      if(idx===1){document.querySelector(".s2 .hint").style.display="block";document.querySelector(".s2 .hint").textContent="🕯️ 点击屏幕吹蜡烛 🕯️";fwActive=false;fwParticles=[]}
+      if(idx===3){document.getElementById("finalText").classList.add("show");document.getElementById("finalSub").classList.add("show");fwActive=true;for(let i=0;i<6;i++)setTimeout(spawnFW,i*200)}
+    }
+  });
+  // auto fireworks
+  setInterval(()=>{if(fwActive)spawnFW()},400);
+  // cake click - blow candles
+  document.querySelector(".s2").addEventListener("click",function(e){
+    let flames=document.querySelectorAll(".flame");
+    if(flames.length>0){
+      flames.forEach(f=>f.setAttribute("opacity","0"));
+      document.querySelector(".s2 .hint").textContent="🎉 蜡烛吹灭啦！向下滚动 →";
+      setTimeout(()=>flames.forEach(f=>{f.setAttribute("opacity","1");f.style.opacity="1"}),2000);
+    }
+  });
+  // show s1 text
+  setTimeout(()=>{document.getElementById("bigText").classList.add("show");document.getElementById("subText").classList.add("show");fwActive=true;for(let i=0;i<4;i++)setTimeout(spawnFW,i*300)},600);
 }
-
-function drawBlessing(){
-  if(P!=="blown")return;let p=Math.min(1,pT/120),a=Math.min(1,p*1.5),y=hh*.74+Math.sin(p*Math.PI)*16;
-  X.save();X.globalAlpha=a;X.fillStyle="#ffd700";X.textAlign="center";X.shadowColor="#ff8800";X.shadowBlur=8;
-  X.font='bold 18px "Microsoft YaHei","PingFang SC",sans-serif';X.fillText("郑可乐，生日快乐！",W/2,y-8);
-  X.font='bold 14px "Microsoft YaHei","PingFang SC",sans-serif';X.fillText("新的一岁，继续做",W/2,y+24);X.fillText("那个闪闪发光的人",W/2,y+46);
-  let st=Date.now()*.003;for(let i=0;i<8;i++){let sx=W/2-80+Math.cos(st+i*.8)*90,sy=y+10+Math.sin(st+i*.8)*20,sb=.4+.6*Math.abs(Math.sin(st*2+i));X.globalAlpha=a*sb;X.fillStyle="#fff";X.fillRect(sx-1,sy-1,3,3)}X.restore();
-}
-
-let cB=[0,0,0,0,0],blowC=0,cAT=0,bD=0;
-function rst(){FW=[];CF=[];fWW=0;fWT=0;lFT=0;cB=[0,0,0,0,0];blowC=0;cAT=0;bD=0}
-function clk(){
-  IA();if(P==="gift"){P="fireworks";rst();spFW();spCFB();lFT=performance.now();H.style.display="none";PN(523,.15);PN(659,.15)}
-  else if(P==="cake"){for(let i=0;i<5;i++)cB[i]=1;blowC=5;PN(523,.2);PN(659,.2);PN(784,.3);bD=30}}
-C.addEventListener("click",clk);C.addEventListener("touchstart",e=>{e.preventDefault();clk()});
-
-function upGB(){gBT+=.04;gB=Math.sin(gBT*1.5)*5}
-
-function loop(ts){
-  X.clearRect(0,0,W,hh);
-  let g=X.createLinearGradient(0,0,0,hh);
-  g.addColorStop(0,"#0d0d2b");g.addColorStop(.5,"#1a1040");g.addColorStop(1,"#0d0d2b");
-  X.fillStyle=g;X.fillRect(0,0,W,hh);
-  drawStars();
-  let cx=W/2,cy=hh*.42;
-  switch(P){
-    case"gift":upGB();drawGift(cx,cy+gB,2.5);break;
-    case"fireworks":fWT=ts-lFT;
-      if(fWW<4&&fWT>250+fWW*60){spFW();spCFB();if(fWW<3)spCFB();lFT=ts;fWW++;if(fWW<=4)PN(523+fWW*80,.1,"square",.03)}
-      for(let i=FW.length-1;i>=0;i--){FW[i].u();if(FW[i].l<=0)FW.splice(i,1);else FW[i].d(X)}
-      for(let i=CF.length-1;i>=0;i--){CF[i].u();if(CF[i].l<=0)CF.splice(i,1);else CF[i].d(X)}
-      if(fWW>=4&&FW.length<10&&CF.length<20){P="cake";cAT=0;H.style.display="block";H.textContent="🕯️ 点击屏幕吹蜡烛 🕯️"}break;
-    case"cake":cAT++;let ckY=cy+40;
-      X.save();X.globalAlpha=Math.min(1,cAT/40);drawCake(cx,ckY);drawFlames(cx,ckY);X.restore();
-      if(blowC>=5&&bD>0){bD--;if(bD<=0){P="blown";pT=0;H.style.display="none"}}break;
-    case"blown":pT++;let bY=cy+40;
-      X.globalAlpha=1;drawCake(cx,bY);
-      for(let i=0;i<5;i++){let sx=cx-34+i*17,sy=bY-62-pT*.5+i*3,sa=Math.max(0,.4-pT*.005);if(sa>0&&pT<80){X.globalAlpha=sa;X.fillStyle="#ccc";let ps=3+pT*.1;X.fillRect(sx-ps,sy-ps,ps*2,ps*2)}}X.globalAlpha=1;
-      drawBlessing();break;
-  }
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
 </script></body></html>
